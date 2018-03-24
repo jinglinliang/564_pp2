@@ -180,32 +180,22 @@ Exception if an invalid page belonging to the file is encountered.
 */
 void BufMgr::flushFile(const File* file)
 {
-	//iterate through the buffer
-	for (std::uint32_t i = 0; i < numBufs; i++)
-	{
-
-		if (bufDescTable[i].file == file && bufDescTable[i].valid == true) {
+	for (std::uint32_t i = 0; i < numBufs; i++){
+		if (bufDescTable[i].file == file && bufDescTable[i].valid) {
 			if (bufDescTable[i].pinCnt > 0)
 				throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, bufDescTable[i].frameNo);
-
-			if (bufDescTable[i].dirty == true) {
+			if (bufDescTable[i].dirty) {
 				bufDescTable[i].file->writePage(bufPool[bufDescTable[i].frameNo]);
-				bufDescTable[i].dirty= false;
+				bufDescTable[i].dirty = false;
 			}
-
 			hashTable->remove(file, bufDescTable[i].pageNo);
 			bufDescTable[i].Clear();
-
 		}
-		//if page belongs to file and invalid, throw excpetion
-		else if (bufDescTable[i].file == file && bufDescTable[i].valid == false) {
+		//page belongs to file and invalid
+		else if (bufDescTable[i].file == file && !bufDescTable[i].valid) {
 			throw BadBufferException(bufDescTable[i].frameNo, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
 		}
-		else {
-			//page doesn't belong to file. do nothing
-		}
 	}
-
 }
 
 /*
